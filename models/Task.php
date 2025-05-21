@@ -25,4 +25,12 @@ class Task {
 
     public function getCompleted() { return $this->completed; }
     public function setCompleted($c) { $this->completed = $c; }
+    
+    public function getTasksByProject($project_id) {
+    $query = "SELECT * FROM tasks WHERE project_id = ?";
+    $stmt = $this->conn->prepare($query);
+    $stmt->execute([$project_id]);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
 }

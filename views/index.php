@@ -42,6 +42,8 @@ if ($isLoggedIn) {
             <li><a href="budget.html">Budget</a></li>
             <li><a href="wishlist.html">Wishlist</a></li>
             <li><a href="agenda.html">Agenda</a></li>
+            <li><a href="projects.php">Projects</a></li>
+
 
             <?php if ($isLoggedIn): ?>
             <li><a href="logout.php" class="login-btn">Logout</a></li>
@@ -107,6 +109,13 @@ if ($isLoggedIn) {
                 <h2>Agenda</h2>
                 <div class="preview-content">
                     <p>Plan your schedule</p>
+                </div>
+            </section>
+            <section class="dashboard-card projects-preview">
+                <h2>Projects</h2>
+                <div class="preview-content">
+                    <p>No projects yet</p>
+                    <a href="projects.php" style="text-decoration: none; color: #007BFF;">➡ View All Projects</a>
                 </div>
             </section>
         </div>
