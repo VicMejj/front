@@ -11,13 +11,15 @@ class TaskController {
     // ✅ CREATE
     public function create(Task $task) {
         $user_id = $task->getUserId();
+        $project_id = $task->getProjectId(); // ✅ Add this line
         $title = $this->conn->real_escape_string($task->getTitle());
         $desc = $this->conn->real_escape_string($task->getDescription());
         $due = $this->conn->real_escape_string($task->getDueDate());
         $completed = $task->getCompleted();
 
-        $sql = "INSERT INTO tasks (user_id, title, description, due_date, completed)
-                VALUES ($user_id, '$title', '$desc', '$due', $completed)";
+        // ✅ Include project_id in SQL
+        $sql = "INSERT INTO tasks (user_id, project_id, title, description, due_date, completed)
+                VALUES ($user_id, $project_id, '$title', '$desc', '$due', $completed)";
         
         if (!$this->conn->query($sql)) {
             die("<p style='color:red;'>❌ SQL ERROR: " . $this->conn->error . "</p>");
@@ -25,6 +27,7 @@ class TaskController {
 
         return true;
     }
+
 
     // ✅ GET ALL
     public function getTasksByUser($user_id) {
@@ -48,6 +51,31 @@ class TaskController {
 
         return $tasks;
     }
+
+    // ✅ GET TASKS BY PROJECT ID
+    public function getTasksByProject($project_id) {
+        $sql = "SELECT * FROM tasks WHERE project_id = ?";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("i", $project_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        $tasks = [];
+        while ($row = $result->fetch_assoc()) {
+            $task = new Task();
+            $task->setTaskId($row['task_id']);
+            $task->setUserId($row['user_id']);
+            $task->setTitle($row['title']);
+            $task->setDescription($row['description']);
+            $task->setDueDate($row['due_date']);
+            $task->setCompleted($row['completed']);
+            $task->setProjectId($row['project_id']); // Make sure your Task model supports this
+            $tasks[] = $task;
+        }
+
+        return $tasks;
+    }
+
 
     // ✅ GET ONE
     public function getTaskById($task_id) {
@@ -105,9 +133,10 @@ class TaskController {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             // ✅ ADD
-            if (isset($_POST['add_task'])) {
+           if (isset($_POST['add_task'])) {
                 $task = new Task();
                 $task->setUserId($user_id);
+                $task->setProjectId($_POST['project_id']); // ✅ this is required
                 $task->setTitle(trim($_POST['title']));
                 $task->setDescription(trim($_POST['description']));
                 $task->setDueDate($_POST['due_date']);

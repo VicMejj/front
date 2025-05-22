@@ -53,18 +53,26 @@ $categories = $budgetController->getCategoriesByDate($date);
     </style>
 </head>
 <body>
-    <div class="nav-bar">
-        <div><a href="index.php">MyDashboard</a></div>
-        <div>
-            <a href="index.php">Dashboard</a>
-            <a href="tasks.php">Tasks</a>
-            <a href="wellness.php">Wellness</a>
-            <a href="budget.php">Budget</a>
-            <a href="wishlist.php">Wishlist</a>
-            <a href="agenda.php">Agenda</a>
-        </div>
-        <a href="logout.php" class="logout-btn">Logout</a>
-    </div>
+       <nav class="navbar">
+        <div class="brand">MyDashboard</div>
+        <button class="navbar-toggle"><i class="fas fa-bars"></i></button>
+        <ul class="nav-links">
+            <li><a href="index.php" class="active">Dashboard</a></li>
+            <li><a href="tasks.php">Tasks</a></li>
+            <li><a href="wellness.php">Wellness</a></li>
+            <li><a href="budget.php">Budget</a></li>
+            <li><a href="wishlist.php">Wishlist</a></li>
+            <li><a href="agenda.php">Agenda</a></li>
+            <li><a href="projects.php">Projects</a></li>
+
+
+            <?php if ($isLoggedIn): ?>
+            <li><a href="logout.php" class="login-btn">Logout</a></li>
+            <?php else: ?>
+            <li><a href="login.php" class="login-btn">Login</a></li>
+            <?php endif; ?>
+        </ul>
+    </nav>
 
     <div class="budget-container">
         <h1>Budget Overview</h1>

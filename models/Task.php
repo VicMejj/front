@@ -25,6 +25,16 @@ class Task {
 
     public function getCompleted() { return $this->completed; }
     public function setCompleted($c) { $this->completed = $c; }
+    private $project_id; // Add this property if not already present
+
+    public function getProjectId() {
+        return $this->project_id;
+    }
+
+    public function setProjectId($project_id) {
+        $this->project_id = $project_id;
+    }
+
     
     public function getTasksByProject($project_id) {
     $query = "SELECT * FROM tasks WHERE project_id = ?";

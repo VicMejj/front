@@ -39,9 +39,9 @@ if ($isLoggedIn) {
             <li><a href="index.php" class="active">Dashboard</a></li>
             <li><a href="tasks.php">Tasks</a></li>
             <li><a href="wellness.php">Wellness</a></li>
-            <li><a href="budget.html">Budget</a></li>
-            <li><a href="wishlist.html">Wishlist</a></li>
-            <li><a href="agenda.html">Agenda</a></li>
+            <li><a href="budget.php">Budget</a></li>
+            <li><a href="wishlist.php">Wishlist</a></li>
+            <li><a href="agenda.php">Agenda</a></li>
             <li><a href="projects.php">Projects</a></li>
 
 
@@ -114,8 +114,7 @@ if ($isLoggedIn) {
             <section class="dashboard-card projects-preview">
                 <h2>Projects</h2>
                 <div class="preview-content">
-                    <p>No projects yet</p>
-                    <a href="projects.php" style="text-decoration: none; color: #007BFF;">➡ View All Projects</a>
+                    <p>Add your projects</p>
                 </div>
             </section>
         </div>

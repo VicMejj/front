@@ -62,19 +62,23 @@ $entries = $isLoggedIn ? $controller->getByUser($user_id) : [];
     <link rel="stylesheet" href="../public/css/styles.css">
 </head>
 <body>
-    <nav class="navbar">
+       <nav class="navbar">
         <div class="brand">MyDashboard</div>
+        <button class="navbar-toggle"><i class="fas fa-bars"></i></button>
         <ul class="nav-links">
-            <li><a href="index.php">Dashboard</a></li>
+            <li><a href="index.php" class="active">Dashboard</a></li>
             <li><a href="tasks.php">Tasks</a></li>
-            <li><a href="wellness.php" class="active">Wellness</a></li>
-            <li><a href="budget.html">Budget</a></li>
-            <li><a href="wishlist.html">Wishlist</a></li>
-            <li><a href="agenda.html">Agenda</a></li>
+            <li><a href="wellness.php">Wellness</a></li>
+            <li><a href="budget.php">Budget</a></li>
+            <li><a href="wishlist.php">Wishlist</a></li>
+            <li><a href="agenda.php">Agenda</a></li>
+            <li><a href="projects.php">Projects</a></li>
+
+
             <?php if ($isLoggedIn): ?>
-                <li><a href="logout.php" class="login-btn">Logout</a></li>
+            <li><a href="logout.php" class="login-btn">Logout</a></li>
             <?php else: ?>
-                <li><a href="login.php" class="login-btn">Login</a></li>
+            <li><a href="login.php" class="login-btn">Login</a></li>
             <?php endif; ?>
         </ul>
     </nav>
