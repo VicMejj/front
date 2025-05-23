@@ -113,9 +113,9 @@ $projects = $user_id ? $projectController->getProjectsByUser($user_id) : [];
         <li><a href="tasks.php">Tasks</a></li>
         <li><a href="projects.php" class="active">Projects</a></li>
         <li><a href="wellness.php">Wellness</a></li>
-        <li><a href="budget.html">Budget</a></li>
-        <li><a href="wishlist.html">Wishlist</a></li>
-        <li><a href="agenda.html">Agenda</a></li>
+        <li><a href="budget.php">Budget</a></li>
+        <li><a href="wishlist.php">Wishlist</a></li>
+        <li><a href="agenda.php">Agenda</a></li>
         <?php if ($isLoggedIn): ?>
             <li><a href="logout.php" class="login-btn">Logout</a></li>
         <?php else: ?>

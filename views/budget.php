@@ -1,116 +1,148 @@
 <?php
+session_start();
+require_once '../config.php';
 require_once '../controllers/BudgetController.php';
 
-// Database connection (replace with your credentials)
-$servername = "localhost";
-$username = "your_username";
-$password = "your_password";
-$dbname = "your_database";
-
-$conn = new mysqli($servername, $username, $password, $dbname);
-
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+// Check if user is logged in
+$isLoggedIn = isset($_SESSION['user_id']);
+if (!$isLoggedIn) {
+    header("Location: login.php");
+    exit;
 }
 
-$budgetController = new BudgetController($conn);
+$user_id = $_SESSION['user_id'];
+$db = (new Database())->getConnection();
+$controller = new BudgetController($db);
 
-// Handle form submissions (if any)
-$budgetController->handlePostRequest();
+// Handle actions
+$controller->handlePostRequest($user_id);
 
-// Fetch budget data for May 2025
-$date = '2025-05-01';
-$budgets = $budgetController->getBudgetsByDate($date);
-$budget = !empty($budgets) ? $budgets[0] : null;
+// Get current month budget
+$current_date = date('Y-m-01');
+$summary = $controller->getBudgetSummary($user_id, $current_date);
+$items = $controller->getBudgetItems($user_id, $current_date);
 
-// Fetch category data for bar chart
-$categories = $budgetController->getCategoriesByDate($date);
+// Get item to edit if editing
+$editItem = null;
+if (isset($_GET['edit'])) {
+    $editItem = $controller->getBudgetById($_GET['edit'], $user_id);
+}
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Budget - My Dashboard</title>
     <link rel="stylesheet" href="../public/css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { margin: 0; font-family: Arial, sans-serif; background-color: #f0f2f5; }
-        .budget-container { padding: 20px; max-width: 1200px; margin: 0 auto; text-align: center; }
-        .nav-bar { background-color: #1a2526; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; }
-        .nav-bar a { color: white; text-decoration: none; margin: 0 15px; font-weight: bold; }
-        .nav-bar a:hover { color: #00aaff; }
-        .logout-btn { background-color: #00aaff; padding: 8px 15px; border-radius: 5px; color: white; text-decoration: none; }
-        .metrics { display: flex; justify-content: space-around; margin: 20px 0; }
-        .metric-box { background-color: #fff; padding: 20px; border-radius: 10px; width: 20%; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); }
-        .metric-box h3 { margin: 0; font-size: 1.2em; color: #333; }
-        .metric-box p { font-size: 1.5em; margin: 10px 0 0; color: #00aaff; }
-        .metric-box small { display: block; color: #777; font-size: 0.9em; }
-        .charts { display: flex; justify-content: space-around; margin-top: 30px; }
-        .chart-placeholder { background-color: #fff; padding: 20px; border-radius: 10px; width: 45%; height: 200px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); display: flex; align-items: center; justify-content: center; color: #777; }
-        h1 { font-size: 2em; margin-bottom: 10px; }
-        p { color: #555; margin-bottom: 20px; }
+        .budget-container { max-width: 1100px; margin: 20px auto; padding: 20px; }
+        .metric-box { background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 10px 0; }
+        table { width: 100%; margin-top: 20px; border-collapse: collapse; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        .btn-edit { color: #28a745; text-decoration: none; }
+        .btn-delete { color: #dc3545; background: none; border: none; cursor: pointer; }
     </style>
 </head>
 <body>
-       <nav class="navbar">
-        <div class="brand">MyDashboard</div>
-        <button class="navbar-toggle"><i class="fas fa-bars"></i></button>
-        <ul class="nav-links">
-            <li><a href="index.php" class="active">Dashboard</a></li>
-            <li><a href="tasks.php">Tasks</a></li>
-            <li><a href="wellness.php">Wellness</a></li>
-            <li><a href="budget.php">Budget</a></li>
-            <li><a href="wishlist.php">Wishlist</a></li>
-            <li><a href="agenda.php">Agenda</a></li>
-            <li><a href="projects.php">Projects</a></li>
-
-
-            <?php if ($isLoggedIn): ?>
+<nav class="navbar">
+    <div class="brand">MyDashboard</div>
+    <button class="navbar-toggle"><i class="fas fa-bars"></i></button>
+    <ul class="nav-links">
+        <li><a href="index.php">Dashboard</a></li>
+        <li><a href="tasks.php">Tasks</a></li>
+        <li><a href="projects.php">Projects</a></li>
+        <li><a href="wellness.php">Wellness</a></li>
+        <li><a href="budget.php" class="active">Budget</a></li>
+        <li><a href="wishlist.php">Wishlist</a></li>
+        <li><a href="agenda.php">Agenda</a></li>
+        <?php if ($isLoggedIn): ?>
             <li><a href="logout.php" class="login-btn">Logout</a></li>
-            <?php else: ?>
-            <li><a href="login.php" class="login-btn">Login</a></li>
-            <?php endif; ?>
-        </ul>
-    </nav>
-
-    <div class="budget-container">
-        <h1>Budget Overview</h1>
-        <p>Track your expenses and savings goals</p>
-
-        <?php if ($budget): ?>
-            <div class="metrics">
-                <div class="metric-box">
-                    <h3>Monthly Budget</h3>
-                    <p>$<?php echo number_format($budget->getMonthlyBudget(), 2); ?></p>
-                    <small>Planned for this month</small>
-                </div>
-                <div class="metric-box">
-                    <h3>Spent This Month</h3>
-                    <p>$<?php echo number_format($budget->getSpentThisMonth(), 2); ?></p>
-                    <small>Up to date</small>
-                </div>
-                <div class="metric-box">
-                    <h3>Savings Goal</h3>
-                    <p>$<?php echo number_format($budget->getSavingsGoal(), 2); ?></p>
-                    <small>For this month</small>
-                </div>
-                <div class="metric-box">
-                    <h3>Remaining Budget</h3>
-                    <p>$<?php echo number_format($budget->getRemainingBudget(), 2); ?></p>
-                    <small>Left to spend</small>
-                </div>
-            </div>
-
-            <div class="charts">
-                <div class="chart-placeholder">[Bar Chart: Monthly Spending by Category]</div>
-                <div class="chart-placeholder">[Line Chart: Savings Progress Over Time]</div>
-            </div>
         <?php else: ?>
-            <p>No budget data available for this month.</p>
+            <li><a href="login.php" class="login-btn">Login</a></li>
         <?php endif; ?>
+    </ul>
+</nav>
+
+<main class="dashboard-container">
+    <h1>Budget Management</h1>
+    
+    <!-- Summary Cards -->
+    <div class="metrics">
+        <div class="metric-box">
+            <h3>Total Planned</h3>
+            <p>$<?= number_format($summary['total_planned'] ?? 0, 2) ?></p>
+        </div>
+        <div class="metric-box">
+            <h3>Total Spent</h3>
+            <p>$<?= number_format($summary['total_spent'] ?? 0, 2) ?></p>
+        </div>
     </div>
 
-    <?php $conn->close(); ?>
+    <!-- Add/Edit Form -->
+    <form method="POST" class="project-form">
+        <h3><?= isset($_GET['edit']) ? 'Edit' : 'Add' ?> Budget Item</h3>
+        <input type="hidden" name="date_budget" value="<?= $current_date ?>">
+        
+        <?php if (isset($_GET['edit'])): ?>
+            <input type="hidden" name="budget_id" value="<?= $_GET['edit'] ?>">
+        <?php endif; ?>
+
+        <input type="text" name="category" placeholder="Category" required 
+               value="<?= isset($editItem) ? htmlspecialchars($editItem['category']) : '' ?>">
+        
+        <input type="number" step="0.01" name="planned_amount" 
+               placeholder="Planned Amount" required
+               value="<?= isset($editItem) ? $editItem['planned_amount'] : '' ?>">
+
+        <input type="number" step="0.01" name="spent_amount" 
+               placeholder="Spent Amount"
+               value="<?= isset($editItem) ? $editItem['spent_amount'] : '' ?>">
+
+        <button type="submit" name="<?= isset($_GET['edit']) ? 'update_budget' : 'add_budget' ?>">
+            <?= isset($_GET['edit']) ? 'Update' : 'Add' ?> Item
+        </button>
+    </form>
+
+    <!-- Budget Items Table -->
+    <table class="task-table">
+        <thead>
+            <tr>
+                <th>Category</th>
+                <th>Planned</th>
+                <th>Spent</th>
+                <th>Difference</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php if ($items): ?>
+                <?php while ($item = $items->fetch_assoc()): ?>
+                <tr>
+                    <td><?= htmlspecialchars($item['category']) ?></td>
+                    <td>$<?= number_format($item['planned_amount'], 2) ?></td>
+                    <td>$<?= number_format($item['spent_amount'], 2) ?></td>
+                    <td>$<?= number_format($item['planned_amount'] - $item['spent_amount'], 2) ?></td>
+                    <td>
+                        <a href="budget.php?edit=<?= $item['budget_id'] ?>" class="btn-edit">✏️</a>
+                        <form method="POST" style="display:inline;">
+                            <input type="hidden" name="budget_id" value="<?= $item['budget_id'] ?>">
+                            <button type="submit" name="delete_budget" class="btn-delete" 
+                                    onclick="return confirm('Are you sure?')">🗑️</button>
+                        </form>
+                    </td>
+                </tr>
+                <?php endwhile; ?>
+            <?php else: ?>
+                <tr>
+                    <td colspan="5" style="text-align: center;">No budget items found</td>
+                </tr>
+            <?php endif; ?>
+        </tbody>
+    </table>
+</main>
+
+<script src="../public/js/main.js"></script>
 </body>
 </html>

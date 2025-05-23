@@ -66,8 +66,8 @@ $tasks = $user_id ? $controller->getTasksByUser($user_id) : [];
         <div class="brand">MyDashboard</div>
         <button class="navbar-toggle"><i class="fas fa-bars"></i></button>
         <ul class="nav-links">
-            <li><a href="index.php" class="active">Dashboard</a></li>
-            <li><a href="tasks.php">Tasks</a></li>
+            <li><a href="index.php" >Dashboard</a></li>
+            <li><a href="tasks.php" class="active">Tasks</a></li>
             <li><a href="wellness.php">Wellness</a></li>
             <li><a href="budget.php">Budget</a></li>
             <li><a href="wishlist.php">Wishlist</a></li>
